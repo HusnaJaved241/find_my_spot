@@ -1,19 +1,24 @@
 import 'dart:io';
+import 'package:find_my_spot/models/spot_model.dart';
+import 'package:find_my_spot/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'custom_text_field.dart';
 import 'custom_button.dart';
+import 'package:latlong2/latlong.dart';
 
 class AddSpotDialog extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController nameController;
   final TextEditingController descController;
+  final LatLng selectedLocation;
 
   const AddSpotDialog({
     super.key,
     required this.formKey,
     required this.nameController,
     required this.descController,
+    required this.selectedLocation,
   });
 
   @override
@@ -80,7 +85,10 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                CustomTextField(hint: "Name", controller: widget.nameController),
+                CustomTextField(
+                  hint: "Name",
+                  controller: widget.nameController,
+                ),
                 const SizedBox(height: 12),
                 CustomTextField(
                   hint: "Description",
@@ -103,10 +111,26 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                       child: CustomButton(
                         label: "Save",
                         bgColor: Colors.green,
-                        onPressed: () {
+                        onPressed: () async {
                           if (widget.formKey.currentState!.validate()) {
-                            // TODO: Save spot data and images to DB
+                            final spot = Spot(
+                              name: widget.nameController.text,
+                              description: widget.descController.text,
+                              latitude: widget.selectedLocation.latitude,
+                              longitude: widget.selectedLocation.longitude,
+                              imagePaths:
+                                  _images.map((xfile) => xfile.path).toList(),
+                              createdAt: DateTime.now(),
+                            );
+                            await DatabaseService.instance.addSpot(spot);
                             Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Spot saved successfully!\n\t ${spot.name} \n ${spot.description}',
+                                ),
+                              ),
+                            );
                           }
                         },
                       ),
@@ -145,6 +169,13 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                     style: TextStyle(color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    'Lat: ${widget.selectedLocation.latitude}, Lng: ${widget.selectedLocation.longitude}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ),
               ],
             ),
           ),
