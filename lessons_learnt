@@ -1,0 +1,19 @@
+-------------5th May---------
+
+- learned to use provider for state management across different widgets and why we need that
+- We have to build different models for objects based on how we want to use our data, like we wanna send it to an api, or firebase DB or some local DB like sqflite or hive.
+- how missing a comma while creating database columns create a whole lot of messss
+- missed a comma while creating table in sqflite, created a whole lot of mess
+- "
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkLocationPermission();
+    }
+  }"
+  
+- why we use the above method...jb user location services k page pe ja kr wapis app me aata hai to app koi response nhi deti disturb ho jati hai
+- If I have created a database once and then want to add another column, then i have to change version of database and use a function onUpgrade(db, old version, new version)
+- How to use Consumer2<Provider1,Provider2>, if we want to listen to 2 providers then in  builder goes like
+  buider: (context, firstProvider, secondProvider, child) {}
+- why heroTag is used while using multiple floating action buttons
+- why does it keep asking asking for super.key in constructor

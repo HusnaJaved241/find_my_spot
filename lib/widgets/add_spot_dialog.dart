@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:find_my_spot/models/spot_model.dart';
+import 'package:find_my_spot/providers/spots_provider.dart';
 import 'package:find_my_spot/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'custom_text_field.dart';
 import 'custom_button.dart';
 import 'package:latlong2/latlong.dart';
@@ -41,10 +43,8 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
 
   @override
   Widget build(BuildContext context) {
-    const darkColor = Color(0xFF2C2F3C);
 
     return Dialog(
-      backgroundColor: const Color(0xFF1D1F2C),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -59,7 +59,6 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -69,7 +68,6 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                       child: CustomButton(
                         label: "Take Photo",
                         icon: Icons.camera_alt,
-                        bgColor: Colors.orange,
                         onPressed: () => _pickImage(ImageSource.camera),
                       ),
                     ),
@@ -78,7 +76,6 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                       child: CustomButton(
                         label: "Choose from\nGallery",
                         icon: Icons.image,
-                        bgColor: darkColor,
                         onPressed: () => _pickImage(ImageSource.gallery),
                       ),
                     ),
@@ -102,7 +99,6 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                     Expanded(
                       child: CustomButton(
                         label: "Cancel",
-                        bgColor: darkColor,
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),
@@ -110,7 +106,6 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                     Expanded(
                       child: CustomButton(
                         label: "Save",
-                        bgColor: Colors.green,
                         onPressed: () async {
                           if (widget.formKey.currentState!.validate()) {
                             final spot = Spot(
@@ -122,6 +117,11 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                                   _images.map((xfile) => xfile.path).toList(),
                               createdAt: DateTime.now(),
                             );
+                            final spotProvider = Provider.of<SpotsProvider>(
+                              context,
+                              listen: false,
+                            );
+                            spotProvider.addSpot(spot);
                             await DatabaseService.instance.addSpot(spot);
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -131,6 +131,8 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                                 ),
                               ),
                             );
+                            widget.nameController.clear();
+                            widget.descController.clear();
                           }
                         },
                       ),
@@ -141,7 +143,7 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                 if (_loadingImages)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
-                    child: CircularProgressIndicator(color: Colors.white),
+                    child: CircularProgressIndicator(),
                   )
                 else if (_images.isNotEmpty)
                   SizedBox(
@@ -166,16 +168,8 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                 else
                   const Text(
                     'No image selected',
-                    style: TextStyle(color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text(
-                    'Lat: ${widget.selectedLocation.latitude}, Lng: ${widget.selectedLocation.longitude}',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                ),
               ],
             ),
           ),

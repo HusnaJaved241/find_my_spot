@@ -5,10 +5,16 @@ import 'package:flutter/material.dart';
 class SpotsProvider extends ChangeNotifier {
   List<Spot> _spots = [];
   List<Spot> get spots => _spots;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   Future<void> fetchSpots() async {
+    _isLoading = true;
+    notifyListeners();
+
     final data = await DatabaseService.instance.getAllSpots();
     _spots = data;
+    _isLoading = false;
     notifyListeners();
   }
 
